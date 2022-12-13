@@ -14,6 +14,28 @@ namespace NZWalks.API.Repositories
             this.nZWalksDbContext = nZWalksDbContext; // created and assigned private-readonly field
         }
 
+        public async Task<Region> AddAsync(Region region)
+        {
+            region.Id = Guid.NewGuid();
+            await nZWalksDbContext.AddAsync(region);
+            await nZWalksDbContext.SaveChangesAsync();
+            return region;
+        }
+
+        public async Task<Region> DeleteAsync(Guid id)
+        {
+            var region = await nZWalksDbContext.Regions.FirstOrDefaultAsync(reg => reg.Id == id);
+            if (region == null)
+            {
+                return null;
+            }
+
+            //Delete the region
+            nZWalksDbContext.Remove(region);
+            await nZWalksDbContext.SaveChangesAsync();
+            return region;
+        }
+
         //Synchronous Implementation
         //public IEnumerable<Region> GetAll()
         //{
@@ -26,5 +48,32 @@ namespace NZWalks.API.Repositories
             return await nZWalksDbContext.Regions.ToListAsync();
         }
 
+        public async Task<Region> GetAsync(Guid id)
+        {
+            return await nZWalksDbContext.Regions.FirstOrDefaultAsync(reg => reg.Id  == id);
+        }
+
+        public async Task<Region> UpdateAsync(Guid id, Region region)
+        {
+            //Check whether region exist
+            var regionToUpdate = await nZWalksDbContext.Regions.FirstOrDefaultAsync(reg => reg.Id == id);
+            //if not respond null
+            if(regionToUpdate == null)
+            {
+                return null;
+            }
+            //if exist map and update region
+            regionToUpdate.Code = region.Code;
+            regionToUpdate.Name = region.Name;
+            regionToUpdate.Area= region.Area;
+            regionToUpdate.Lat= region.Lat;
+            regionToUpdate.Long= region.Long;
+            regionToUpdate.Population= region.Population;
+
+            await nZWalksDbContext.SaveChangesAsync();
+            //return updated region
+
+            return regionToUpdate;
+        }
     }
 }
