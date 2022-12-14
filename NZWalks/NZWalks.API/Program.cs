@@ -20,6 +20,7 @@ builder.Services.AddDbContext<NZWalksDbContext>(options =>
 //Injecting Repositories as services here
 //Whenever <IRepository is asked, Provide Repository implementaion>
 builder.Services.AddScoped<IRegionRepository, RegionRepository>();
+builder.Services.AddScoped<IWalkRepository, WalkRepository>();
 
 //Injecting Automapper
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
