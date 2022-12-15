@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NZWalks.API.Models.Domain;
 using NZWalks.API.Models.DTO;
@@ -11,6 +12,7 @@ namespace NZWalks.API.Controllers
     //[Route("Regions")]
     [Route("[controller]")] //this will automatically take the controller name
     //[Route("api/controller")]
+
     public class RegionsController : Controller
     {
         private readonly IRegionRepository regionRepository;
@@ -24,6 +26,7 @@ namespace NZWalks.API.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "reader")]
         public async Task<IActionResult> GetAllRegionsAsync()
         {
             var regions = await regionRepository.GetAllAsync();
@@ -58,6 +61,7 @@ namespace NZWalks.API.Controllers
         [HttpGet]
         [Route("{id:guid}")]
         [ActionName("GetRegionAsync")]
+        [Authorize(Roles = "reader")]
         public async Task<IActionResult> GetRegionAsync(Guid id)
         {
             var region = await regionRepository.GetAsync(id);
@@ -71,14 +75,18 @@ namespace NZWalks.API.Controllers
         }
 
         [HttpPost]
+        //Authorization attribute
+        [Authorize(Roles = "writer")]
         public async Task<IActionResult> AddRegionAsync(Models.DTO.AddRegionRequest addRegionRequest)
         {
+            //Since Fluent Validation is in place, no need to call anything here and custom vlidation commented
             //Validation method
-            if (!ValidateAddRegionAsync(addRegionRequest))
-            {
-                //Model state is very useful for validation
-                return BadRequest(ModelState);
-            }
+            //if (!ValidateAddRegionAsync(addRegionRequest))
+            //{
+            //Model state is very useful for validation
+            //    return BadRequest(ModelState);
+            //}
+
 
             //we dont want user to provide the Guid so we created separate addregionrequest DTO and called here
 
@@ -117,6 +125,7 @@ namespace NZWalks.API.Controllers
 
         [HttpDelete]
         [Route("{id:guid}")]
+        [Authorize(Roles = "writer")]
         public async Task<IActionResult> DeleteRegionAsync(Guid id)
         {
             //Get region from DB
@@ -148,13 +157,15 @@ namespace NZWalks.API.Controllers
 
         [HttpPut]
         [Route("{id:guid}")]
+        [Authorize(Roles = "writer")]
         public async Task<IActionResult> UpdateRegionAsync([FromRoute] Guid id, [FromBody] Models.DTO.UpdateRegionRequest updateRegionRequest)
         {
+            //Since Fluent Validation is in place, no need to call anything here and custom vlidation commented
             //Validate update region request
-            if(!ValidateUpdateRegionAsync(updateRegionRequest))
-            {
-                return BadRequest(ModelState);
-            }
+            //if(!ValidateUpdateRegionAsync(updateRegionRequest))
+            //{
+            //    return BadRequest(ModelState);
+            //}
 
             //DTO to Domain Model
             var updateResult = new Models.Domain.Region()
@@ -193,6 +204,8 @@ namespace NZWalks.API.Controllers
             return Ok(regionDTO);
 
         }
+
+
 
         #region Private methods
         private bool ValidateAddRegionAsync(Models.DTO.AddRegionRequest addRegionRequest)

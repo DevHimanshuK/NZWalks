@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using NZWalks.API.Data;
 using NZWalks.API.Models.Domain;
 using NZWalks.API.Repositories;
+using System.Data;
 
 namespace NZWalks.API.Controllers
 {
@@ -27,6 +29,7 @@ namespace NZWalks.API.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "reader")]
         public async Task<IActionResult> GetAllWalksAsync()
         {
             //Fetch data from DB as domain model object
@@ -41,6 +44,7 @@ namespace NZWalks.API.Controllers
         [HttpGet]
         [Route("{id:guid}")]
         [ActionName("GetWalkAsync")]
+        [Authorize(Roles = "reader")]
         public async Task<IActionResult> GetWalkAsync(Guid id)
         {
             //fetch walk from DB as Walk Model domain object
@@ -52,8 +56,13 @@ namespace NZWalks.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "writer")]
         public async Task<IActionResult> AddWalkAsync([FromBody] Models.DTO.AddWalkRequest addWalkReq)
         {
+            //Fluent Validations are not suggested for nested validations like this use case has
+            //only the model level validations are done. nested ones are callled as it is
+
+
             //Call Validation Method
             if (!(await ValidateAddWalkAsync(addWalkReq)))
             {
@@ -81,6 +90,7 @@ namespace NZWalks.API.Controllers
 
         [HttpPut]
         [Route("{id:guid}")]
+        [Authorize(Roles = "writer")]
         public async Task<IActionResult> UpdateWalkAsync([FromRoute] Guid id, [FromBody] Models.DTO.UpdateWalkRequest updateWalkRequest)
         {
             //Add Validation
@@ -113,6 +123,7 @@ namespace NZWalks.API.Controllers
 
         [HttpDelete]
         [Route("{id:guid}")]
+        [Authorize(Roles = "writer")]
         public async Task<IActionResult> DeleteWalkAsync(Guid id)
         {
             //Call repository to delete walk - stored as walk domain object
@@ -131,23 +142,27 @@ namespace NZWalks.API.Controllers
         #region Private methods
         private async Task<bool> ValidateAddWalkAsync(Models.DTO.AddWalkRequest addWalkReq)
         {
-            if (addWalkReq == null)
-            {
-                ModelState.AddModelError(nameof(addWalkReq),
-                    $"{nameof(addWalkReq)} cannot be empty");
-                return false;
-            }
+            //Commenting the below 3 conditions as are validated using Fluent
 
-            if (string.IsNullOrWhiteSpace(addWalkReq.Name))
-            {
-                ModelState.AddModelError(nameof(addWalkReq.Name),
-                    $"{nameof(addWalkReq.Name)} is Required");
-            }
-            if (addWalkReq.Length <= 0)
-            {
-                ModelState.AddModelError(nameof(addWalkReq.Length),
-                    $"{nameof(addWalkReq.Length)} should be greater than 0");
-            }
+            //if (addWalkReq == null)
+            //{
+            //    ModelState.AddModelError(nameof(addWalkReq),
+            //        $"{nameof(addWalkReq)} cannot be empty");
+            //    return false;
+            //}
+
+            //if (string.IsNullOrWhiteSpace(addWalkReq.Name))
+            //{
+            //    ModelState.AddModelError(nameof(addWalkReq.Name),
+            //        $"{nameof(addWalkReq.Name)} is Required");
+            //}
+            //if (addWalkReq.Length <= 0)
+            //{
+            //    ModelState.AddModelError(nameof(addWalkReq.Length),
+            //        $"{nameof(addWalkReq.Length)} should be greater than 0");
+            //}
+
+
             //We are passing 2 GUID, those should be valid
             var region = await regionRepository.GetAsync(addWalkReq.RegionId);
             if (region == null)

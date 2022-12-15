@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NZWalks.API.Models.DTO;
 using NZWalks.API.Repositories;
+using System.Data;
 
 namespace NZWalks.API.Controllers
 {
@@ -17,7 +19,9 @@ namespace NZWalks.API.Controllers
             this.walkDifficultyRepository = walkDifficultyRepository;
             this.mapper = mapper;
         }
+
         [HttpGet]
+        [Authorize(Roles = "reader")]
         public async Task<IActionResult> GetAllWalkDifficultiesAsync()
         {
             var WalkDiff = await walkDifficultyRepository.GetAllAsync();
@@ -31,6 +35,7 @@ namespace NZWalks.API.Controllers
         [HttpGet]
         [Route("{id:guid}")]
         [ActionName("GetWalkDifficultyByIdAsync")]
+        [Authorize(Roles = "reader")]
         public async Task<IActionResult> GetWalkDifficultyByIdAsync(Guid id)
         {
             var WalkDiff = await walkDifficultyRepository.GetAsync(id);
@@ -47,13 +52,15 @@ namespace NZWalks.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "writer")]
         public async Task<IActionResult> AddWalkDifficultyAsync(Models.DTO.AddWalkDifficultyRequest addwalkDifficultyRequest)
         {
-            ////Validate incoming data
-            if (!ValidateAddWalkDifficultyAsync(addwalkDifficultyRequest))
-            {
-                return BadRequest(ModelState);
-            }
+            //Fluent Validation in place
+            //Validate incoming data
+            //if (!ValidateAddWalkDifficultyAsync(addwalkDifficultyRequest))
+            //{
+            //    return BadRequest(ModelState);
+            //}
 
             //DTO to Domain
             var walkdifficultydomain = new Models.Domain.WalkDifficulty
@@ -72,13 +79,15 @@ namespace NZWalks.API.Controllers
 
         [HttpPut]
         [Route("{id:guid}")]
+        [Authorize(Roles = "writer")]
         public async Task<IActionResult> UpdateWalkDifficultyAsync([FromRoute] Guid id, [FromBody] Models.DTO.UpdateWalkDifficultyRequest updateWalkDifficultyRequestDTO)
         {
+            //Fluent Validation
             //Validate the object
-            if (!ValidateUpdateWalkDifficultyAsync(updateWalkDifficultyRequestDTO))
-            {
-                return BadRequest(ModelState);
-            }
+            //if (!ValidateUpdateWalkDifficultyAsync(updateWalkDifficultyRequestDTO))
+            //{
+            //    return BadRequest(ModelState);
+            //}
 
             //Convert DTO to Domain
             var walkDiffDomain = new Models.Domain.WalkDifficulty
@@ -100,6 +109,7 @@ namespace NZWalks.API.Controllers
 
         [HttpDelete]
         [Route("{id:guid}")]
+        [Authorize(Roles = "writer")]
 
         public async Task<IActionResult> DeleteWalkDifficulty(Guid id)
         {
